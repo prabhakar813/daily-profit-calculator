@@ -1344,7 +1344,7 @@ button:active {
         );
 
         reportTotal.textContent = formatExpenseMoney(total);
-        
+        categoryBreakdown.textContent = "";
         // Daily Profit History for selected month
         const dailyRecords = JSON.parse(
           localStorage.getItem("dailyProfitCalculatorDailyRecordsV1") || "[]"
@@ -1390,8 +1390,6 @@ button:active {
         );
 
         categoryBreakdown.appendChild(dailySummary);
-        
-        categoryBreakdown.textContent = "";
 
         if (monthExpenses.length === 0) {
           const message = document.createElement("p");

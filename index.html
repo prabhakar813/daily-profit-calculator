@@ -1366,6 +1366,21 @@ button:active {
           (sum, item) => sum + Number(item.profit || 0), 0
         );
 
+        // Monthly Performance Analytics
+        const totalWorkingDays = monthDailyRecords.length;
+
+        const averageDailyProfit = totalWorkingDays > 0
+          ? dailyProfitTotal / totalWorkingDays
+          : 0;
+
+        const bestPerformingDay = monthDailyRecords.length > 0
+          ? monthDailyRecords.reduce((best, current) =>
+              Number(current.profit || 0) > Number(best.profit || 0)
+                ? current
+                : best
+            )
+          : null;
+          
         const dailySummary = document.createElement("div");
         dailySummary.className = "daily-record-entry";
 
@@ -1385,8 +1400,31 @@ button:active {
         profitRow.textContent =
           "Recorded Net Profit: " + formatExpenseMoney(dailyProfitTotal);
 
+        
+        // Performance Analytics Display
+        const workingDaysRow = document.createElement("p");
+        workingDaysRow.textContent =
+          "Total Working Days: " + totalWorkingDays;
+
+        const averageProfitRow = document.createElement("p");
+        averageProfitRow.textContent =
+          "Average Daily Profit: " +
+          formatExpenseMoney(averageDailyProfit);
+
+        const bestDayRow = document.createElement("p");
+        bestDayRow.textContent = bestPerformingDay
+          ? "Best-Performing Day: " + bestPerformingDay.date +
+            " (" + formatExpenseMoney(Number(bestPerformingDay.profit || 0)) + ")"
+          : "Best-Performing Day: No records";
+
         dailySummary.append(
-          summaryTitle, revenueRow, expensesRow, profitRow
+          summaryTitle,
+          revenueRow,
+          expensesRow,
+          profitRow,
+          workingDaysRow,
+          averageProfitRow,
+          bestDayRow
         );
 
         categoryBreakdown.appendChild(dailySummary);

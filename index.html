@@ -1366,6 +1366,21 @@ button:active {
           (sum, item) => sum + Number(item.profit || 0), 0
         );
 
+        // Monthly Performance Analytics
+        const totalWorkingDays = monthDailyRecords.length;
+
+        const averageDailyProfit = totalWorkingDays > 0
+          ? dailyProfitTotal / totalWorkingDays
+          : 0;
+
+        const bestPerformingDay = monthDailyRecords.length > 0
+          ? monthDailyRecords.reduce((best, current) =>
+              Number(current.profit || 0) > Number(best.profit || 0)
+                ? current
+                : best
+            )
+          : null;
+        
         const dailySummary = document.createElement("div");
         dailySummary.className = "daily-record-entry";
 

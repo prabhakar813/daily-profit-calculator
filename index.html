@@ -772,6 +772,59 @@ button:active {
 @media (prefers-reduced-motion: no-preference) {
   button { transition: background .15s ease; }
 }
+  /* APP NAVIGATION */
+body {
+  padding-bottom: 100px;
+}
+
+.app-section {
+  display: none;
+}
+
+.app-section.active {
+  display: block;
+}
+
+.app-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+  background: #FFFFFF;
+  border-top: 1px solid #D5DFED;
+  box-shadow: 0 -5px 20px rgba(16,27,53,.08);
+}
+
+.app-nav button {
+  padding: 8px 2px;
+  background: transparent;
+  color: #53627A;
+  font-size: 11px;
+  border-radius: 10px;
+}
+
+.app-nav button.active {
+  background: #EDF3FF;
+  color: #2451A4;
+}
+
+@media (min-width: 700px) {
+  .app-nav {
+    max-width: 680px;
+    left: 50%;
+    right: auto;
+    width: 100%;
+    transform: translateX(-50%);
+    border: 1px solid #D5DFED;
+    border-bottom: 0;
+    border-radius: 16px 16px 0 0;
+  }
+}
 </style>
 </head>
 
@@ -793,7 +846,7 @@ button:active {
   <p id="status">All expenses deducted.</p>
 </section>
 
-<section class="card">
+<section class="card app-section active" data-tab-content="home">
   <h2>Daily Expenses & Income</h2>
   <p class="section-subtitle">Enter your daily earnings and costs.</p>
 
@@ -837,7 +890,7 @@ button:active {
   </form>
 </section>
 
-<section class="card overview">
+<section class="card overview app-section active" data-tab-content="home">
   <h2>Monthly Overview</h2>
   <p class="section-subtitle">Your income, expenses and target progress.</p>
 
@@ -871,7 +924,7 @@ button:active {
   </div>
 </section>
 
-  <section class="card expense-history">
+  <section class="card expense-history app-section" data-tab-content="expenses">
   <h2>Expense History</h2>
   <p class="history-subtitle">
     Record your daily expenses and track where your money goes.
@@ -923,7 +976,7 @@ button:active {
   </div>
   </section>
   
-<section class="card monthly-report">
+<section class="card monthly-report app-section" data-tab-content="reports">
   <h2>Monthly Report</h2>
   <p class="history-subtitle">
     Review your recorded expenses month by month.
@@ -943,7 +996,7 @@ button:active {
   </div>
 </section>
   
-<section class="card savings-tracker">
+<section class="card savings-tracker app-section" data-tab-content="savings">
   <h2>Monthly Savings Tracker</h2>
   <p class="history-subtitle">
     Set a savings goal and track your progress every month.
@@ -995,7 +1048,7 @@ button:active {
   </p>
 </section>
   
-<section class="card daily-history">
+<section class="card daily-history app-section" data-tab-content="history">
   <h2>Daily Profit History</h2>
   <p class="history-subtitle">
     Save your daily calculator results and review your past performance.
@@ -1033,7 +1086,13 @@ button:active {
   Note: Results are estimates. Actual income and expenses may vary.
 </p>
 </main>
-
+<nav class="app-nav" aria-label="Main navigation">
+  <button type="button" class="active" data-tab="home">🏠<br>Home</button>
+  <button type="button" data-tab="expenses">💸<br>Expenses</button>
+  <button type="button" data-tab="reports">📊<br>Reports</button>
+  <button type="button" data-tab="savings">🎯<br>Savings</button>
+  <button type="button" data-tab="history">📅<br>History</button>
+</nav>
 <script>
 (function () {
   const ids = [
@@ -1770,6 +1829,25 @@ if ("serviceWorker" in navigator) {
       .catch(error => console.error("Service worker registration failed:", error));
   });
 }
+  // APP TAB NAVIGATION
+document.querySelectorAll(".app-nav button").forEach(button => {
+  button.addEventListener("click", () => {
+    const selectedTab = button.dataset.tab;
+
+    document.querySelectorAll("[data-tab-content]").forEach(section => {
+      section.classList.toggle(
+        "active",
+        section.dataset.tabContent === selectedTab
+      );
+    });
+
+    document.querySelectorAll(".app-nav button").forEach(navButton => {
+      navButton.classList.toggle("active", navButton === button);
+    });
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+});
 </script>
 </body>
 </html>

@@ -314,7 +314,7 @@ button:active {
   color: #2451A4;
 }
 
-.hint {
+.hint {}
 /* MONTHLY OVERVIEW */
 .overview {
   background: linear-gradient(180deg, #FFFFFF, #F8FAFF);
@@ -1844,8 +1844,6 @@ document.querySelectorAll(".app-nav button").forEach(button => {
     document.querySelectorAll(".app-nav button").forEach(navButton => {
       navButton.classList.toggle("active", navButton === button);
     });
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
   });
 });
 </script>

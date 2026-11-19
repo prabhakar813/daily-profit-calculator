@@ -1,5 +1,29 @@
+
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="100" fill="#1769ff"/>
-  <text x="256" y="310" font-size="180" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" fill="#ffffff">₹</text>
-  <path d="M130 375h252" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#17366F"/>
+      <stop offset="100%" stop-color="#07152F"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#12A875"/>
+      <stop offset="100%" stop-color="#70F05C"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="105" fill="url(#bg)"/>
+
+  <rect x="105" y="275" width="65" height="115" rx="12" fill="#2878E8"/>
+  <rect x="205" y="220" width="65" height="170" rx="12" fill="#2878E8"/>
+  <rect x="305" y="155" width="65" height="235" rx="12" fill="url(#green)"/>
+
+  <path d="M75 300 Q205 185 405 95" fill="none"
+        stroke="url(#green)" stroke-width="25" stroke-linecap="round"/>
+  <path d="M355 95 L420 85 L410 150 Z" fill="#70F05C"/>
+
+  <circle cx="256" cy="330" r="83" fill="#0A1D3B"
+          stroke="#FFFFFF" stroke-width="10"/>
+  <text x="256" y="367" font-size="110" text-anchor="middle"
+        font-family="Arial,sans-serif" font-weight="bold"
+        fill="#FFFFFF">₹</text>
 </svg>

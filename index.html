@@ -1037,8 +1037,8 @@ body {
     <div style="display:block; width:100%; height:18px; margin:14px 0; overflow:hidden; border-radius:20px; background:#E6ECF5;">
   <div id="savingsProgressBar" style="display:block; width:0%; height:100%; border-radius:20px; background:#20A779;"></div>
 </div>
-    
-    
+  </div>     
+  
   <div class="savings-result">
     <span>Remaining to Goal</span>
     <strong id="savingsRemaining">₹0</strong>
@@ -1049,6 +1049,28 @@ body {
   </p>
 </section>
   
+<section class="card app-section" data-tab-content="savings">
+  <h2>Data Management</h2>
+  <p class="history-subtitle">
+    Backup your expenses, savings and daily profit records.
+  </p>
+
+  <button type="button" id="exportBackupBtn">
+    Download Backup
+  </button>
+
+  <label for="restoreBackupFile">Restore Previous Backup</label>
+  <input
+    type="file"
+    id="restoreBackupFile"
+    accept=".json,application/json"
+  >
+
+  <p id="backupStatus" class="history-subtitle">
+    Keep a backup of your data safe.
+  </p>
+</section>
+
 <section class="card daily-history app-section" data-tab-content="history">
   <h2>Daily Profit History</h2>
   <p class="history-subtitle">
@@ -1086,6 +1108,7 @@ body {
 <p class="hint">
   Note: Results are estimates. Actual income and expenses may vary.
 </p>
+
 </main>
 <nav class="app-nav" aria-label="Main navigation">
   <button type="button" class="active" data-tab="home">🏠<br>Home</button>
@@ -1847,6 +1870,110 @@ document.querySelectorAll(".app-nav button").forEach(button => {
     });
   });
 });
+  
+// DATA BACKUP & RESTORE
+(() => {
+  const expenseKey = "dailyProfitCalculatorExpensesV1";
+  const savingsKey = "dailyProfitCalculatorSavingsV1";
+  const dailyKey = "dailyProfitCalculatorDailyRecordsV1";
+
+  const exportBtn = document.getElementById("exportBackupBtn");
+  const restoreInput = document.getElementById("restoreBackupFile");
+  const status = document.getElementById("backupStatus");
+
+  if (!exportBtn || !restoreInput || !status) return;
+
+  exportBtn.addEventListener("click", () => {
+    try {
+      const backup = {
+        app: "Daily Profit",
+        version: 1,
+        createdAt: new Date().toISOString(),
+        data: {
+          expenses: JSON.parse(localStorage.getItem(expenseKey) || "[]"),
+          savings: JSON.parse(localStorage.getItem(savingsKey) || "[]"),
+          dailyRecords: JSON.parse(localStorage.getItem(dailyKey) || "[]")
+        }
+      };
+
+      const blob = new Blob(
+        [JSON.stringify(backup, null, 2)],
+        { type: "application/json" }
+      );
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "daily-profit-backup-" +
+        new Date().toISOString().slice(0, 10) + ".json";
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      status.textContent = "Backup downloaded successfully.";
+    } catch (error) {
+      status.textContent = "Backup failed. Please try again.";
+    }
+  });
+
+  restoreInput.addEventListener("change", async () => {
+    const file = restoreInput.files[0];
+    if (!file) return;
+
+    try {
+      const backup = JSON.parse(await file.text());
+
+      if (
+        backup.app !== "Daily Profit" ||
+        backup.version !== 1 ||
+        !backup.data ||
+        !Array.isArray(backup.data.expenses) ||
+        !Array.isArray(backup.data.savings) ||
+        !Array.isArray(backup.data.dailyRecords)
+      ) {
+        throw new Error("Invalid backup file");
+      }
+
+      const confirmed = confirm(
+        "Restoring this backup will replace your current expenses, savings and daily history. Continue?"
+      );
+
+      if (!confirmed) {
+        status.textContent = "Restore cancelled.";
+        restoreInput.value = "";
+        return;
+      }
+
+      localStorage.setItem(
+        expenseKey,
+        JSON.stringify(backup.data.expenses)
+      );
+
+      localStorage.setItem(
+        savingsKey,
+        JSON.stringify(backup.data.savings)
+      );
+
+      localStorage.setItem(
+        dailyKey,
+        JSON.stringify(backup.data.dailyRecords)
+      );
+
+      status.textContent = "Backup restored successfully. Reloading...";
+      location.reload();
+
+    } catch (error) {
+      status.textContent =
+        "Restore failed. Invalid or unreadable backup file.";
+    }
+
+    restoreInput.value = "";
+  });
+})();
+
 </script>
 </body>
 </html>

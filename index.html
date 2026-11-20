@@ -1828,7 +1828,19 @@ downloadMonthlyPdfBtn.addEventListener("click", () => {
         }
 
         const previousRecord = savingsRecords[month];
+        if (
+          previousRecord &&
+          (
+            Number(previousRecord.goal) !== goal ||
+            Number(previousRecord.saved) !== saved
+          )
+        ) {
+          const confirmed = confirm(
+            "Savings already exists for this month. Do you want to update it?"
+          );
 
+          if (!confirmed) return;
+        }
         savingsRecords[month] = {
           goal: goal,
           saved: saved

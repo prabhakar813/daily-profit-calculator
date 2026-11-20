@@ -1936,6 +1936,8 @@ downloadMonthlyPdfBtn.addEventListener("click", () => {
         "padding:8px 12px;border:0;border-radius:8px;background:#FCE8EB;color:#A52235;font-weight:700;";
 
       deleteBtn.addEventListener("click", function () {
+        const confirmed = confirm("Delete this daily record?");
+if (!confirmed) return;
         const updated = JSON.parse(
           localStorage.getItem(dailyRecordsKey) || "[]"
         ).filter(function (item) {

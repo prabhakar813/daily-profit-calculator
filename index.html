@@ -2121,20 +2121,51 @@ document.querySelectorAll(".app-nav button").forEach(button => {
         return;
       }
 
-      localStorage.setItem(
-        expenseKey,
-        JSON.stringify(backup.data.expenses)
-      );
+            const previousExpenses = localStorage.getItem(expenseKey);
+      const previousSavings = localStorage.getItem(savingsKey);
+      const previousDailyRecords = localStorage.getItem(dailyKey);
 
-      localStorage.setItem(
-        savingsKey,
-        JSON.stringify(backup.data.savings)
-      );
+      try {
+        localStorage.setItem(
+          expenseKey,
+          JSON.stringify(backup.data.expenses)
+        );
 
-      localStorage.setItem(
-        dailyKey,
-        JSON.stringify(backup.data.dailyRecords)
-      );
+        localStorage.setItem(
+          savingsKey,
+          JSON.stringify(backup.data.savings)
+        );
+
+        localStorage.setItem(
+          dailyKey,
+          JSON.stringify(backup.data.dailyRecords)
+        );
+
+      } catch (error) {
+        try {
+          if (previousExpenses === null) {
+            localStorage.removeItem(expenseKey);
+          } else {
+            localStorage.setItem(expenseKey, previousExpenses);
+          }
+
+          if (previousSavings === null) {
+            localStorage.removeItem(savingsKey);
+          } else {
+            localStorage.setItem(savingsKey, previousSavings);
+          }
+
+          if (previousDailyRecords === null) {
+            localStorage.removeItem(dailyKey);
+          } else {
+            localStorage.setItem(dailyKey, previousDailyRecords);
+          }
+        } catch (rollbackError) {
+          console.error("Restore rollback failed:", rollbackError);
+        }
+
+        throw error;
+      }
 
       status.textContent = "Backup restored successfully. Reloading...";
       location.reload();

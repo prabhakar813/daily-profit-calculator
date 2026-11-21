@@ -2095,22 +2095,69 @@ document.querySelectorAll(".app-nav button").forEach(button => {
 
     try {
       const backup = JSON.parse(await file.text());
-
       if (
+        !backup ||
         backup.app !== "Daily Profit" ||
         backup.version !== 1 ||
         !backup.data ||
         !Array.isArray(backup.data.expenses) ||
-        (
-  typeof backup.data.savings !== "object" ||
-  backup.data.savings === null ||
-  Array.isArray(backup.data.savings)
-) ||
+        typeof backup.data.savings !== "object" ||
+        backup.data.savings === null ||
+        Array.isArray(backup.data.savings) ||
         !Array.isArray(backup.data.dailyRecords)
       ) {
-        throw new Error("Invalid backup file");
+        throw new Error("Invalid backup structure");
       }
+            const isValidDate = value =>
+        typeof value === "string" &&
+        /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+        !Number.isNaN(Date.parse(value));
 
+      const isValidMonth = value =>
+        typeof value === "string" &&
+        /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+
+      const isValidAmount = value =>
+        typeof value === "number" &&
+        Number.isFinite(value) &&
+        value >= 0;
+
+      const validExpenses = backup.data.expenses.every(item =>
+        item &&
+        typeof item.id === "string" &&
+        item.id.length > 0 &&
+        isValidDate(item.date) &&
+        ["Fuel", "Food", "Maintenance", "EMI", "Other"].includes(item.category) &&
+        isValidAmount(item.amount) &&
+        typeof item.note === "string"
+      );
+
+      const validSavings = Object.entries(backup.data.savings).every(
+        ([month, record]) =>
+          isValidMonth(month) &&
+          record &&
+          typeof record === "object" &&
+          !Array.isArray(record) &&
+          isValidAmount(record.goal) &&
+          isValidAmount(record.saved)
+      );
+
+      const validDailyRecords = backup.data.dailyRecords.every(item =>
+        item &&
+        isValidDate(item.date) &&
+        isValidAmount(item.revenue) &&
+        isValidAmount(item.expenses) &&
+        Number.isFinite(item.profit)
+      );
+
+            if (
+        !validExpenses ||
+        !validSavings ||
+        !validDailyRecords
+      ) {
+        throw new Error("Invalid backup file");
+      }   
+      
       const confirmed = confirm(
         "Restoring this backup will replace your current expenses, savings and daily history. Continue?"
       );

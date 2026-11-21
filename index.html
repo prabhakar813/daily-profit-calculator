@@ -2101,7 +2101,11 @@ document.querySelectorAll(".app-nav button").forEach(button => {
         backup.version !== 1 ||
         !backup.data ||
         !Array.isArray(backup.data.expenses) ||
-        !Array.isArray(backup.data.savings) ||
+        (
+  typeof backup.data.savings !== "object" ||
+  backup.data.savings === null ||
+  Array.isArray(backup.data.savings)
+) ||
         !Array.isArray(backup.data.dailyRecords)
       ) {
         throw new Error("Invalid backup file");

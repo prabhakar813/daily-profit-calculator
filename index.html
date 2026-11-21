@@ -1057,7 +1057,12 @@ body {
   <p class="history-subtitle">
     Backup your expenses, savings and daily profit records.
   </p>
-
+  <p
+    id="integrityStatus"
+    class="history-subtitle"
+    style="display:none; color:#C43D50; font-weight:600;"
+    role="status"
+  ></p>
   <button type="button" id="exportBackupBtn">
     Download Backup
   </button>
@@ -1873,7 +1878,86 @@ downloadMonthlyPdfBtn.addEventListener("click", () => {
   
   // DAILY PROFIT HISTORY
   const dailyRecordsKey = "dailyProfitCalculatorDailyRecordsV1";
+// AUTOMATIC DATA INTEGRITY CHECK
+function checkDataIntegrity() {
+  const status = $("integrityStatus");
+  const problems = [];
 
+  function readStoredData(key, label, fallback) {
+    try {
+      const stored = localStorage.getItem(key);
+      return stored === null ? fallback : JSON.parse(stored);
+    } catch (error) {
+      problems.push(label + " data cannot be read.");
+      return null;
+    }
+  }
+
+  const expenses = readStoredData(
+    expenseStorageKey, "Expense", []
+  );
+
+  const savings = readStoredData(
+    savingsStorageKey, "Savings", {}
+  );
+
+  const dailyRecords = readStoredData(
+    dailyRecordsKey, "Daily History", []
+  );
+
+  if (expenses !== null) {
+    if (!Array.isArray(expenses) || !expenses.every(item =>
+      item &&
+      typeof item.id === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(item.date) &&
+      ["Fuel", "Food", "Maintenance", "EMI", "Other"].includes(item.category) &&
+      Number.isFinite(Number(item.amount)) &&
+      Number(item.amount) > 0
+    )) {
+      problems.push("Expense records have an invalid format.");
+    }
+  }
+
+  if (savings !== null) {
+    if (
+      !savings ||
+      typeof savings !== "object" ||
+      Array.isArray(savings) ||
+      !Object.entries(savings).every(([month, record]) =>
+        /^\d{4}-(0[1-9]|1[0-2])$/.test(month) &&
+        record &&
+        typeof record === "object" &&
+        !Array.isArray(record) &&
+        Number.isFinite(Number(record.goal)) &&
+        Number(record.goal) >= 0 &&
+        Number.isFinite(Number(record.saved)) &&
+        Number(record.saved) >= 0
+      )
+    ) {
+      problems.push("Savings records have an invalid format.");
+    }
+  }
+
+  if (dailyRecords !== null) {
+    if (!Array.isArray(dailyRecords) || !dailyRecords.every(record =>
+      record &&
+      /^\d{4}-\d{2}-\d{2}$/.test(record.date) &&
+      Number.isFinite(Number(record.revenue)) &&
+      Number.isFinite(Number(record.expenses)) &&
+      Number.isFinite(Number(record.profit))
+    )) {
+      problems.push("Daily History records have an invalid format.");
+    }
+  }
+
+  if (problems.length > 0) {
+    status.textContent =
+      "⚠️ Data check warning: " + problems.join(" ");
+    status.style.display = "block";
+  } else {
+    status.style.display = "none";
+  }
+}
   const profitDateInput = $("profitRecordDate");
   const saveProfitBtn = $("saveProfitRecordBtn");
   const recordsContainer = $("dailyProfitRecords");
@@ -1912,9 +1996,27 @@ downloadMonthlyPdfBtn.addEventListener("click", () => {
   }
 
   function renderDailyRecords() {
-    const records = JSON.parse(
-      localStorage.getItem(dailyRecordsKey) || "[]"
-    );
+    let records = [];
+
+try {
+  const storedRecords = localStorage.getItem(dailyRecordsKey);
+
+  if (storedRecords) {
+    const parsedRecords = JSON.parse(storedRecords);
+
+    if (Array.isArray(parsedRecords)) {
+      records = parsedRecords.filter(record =>
+        record &&
+        typeof record.date === "string" &&
+        Number.isFinite(Number(record.revenue)) &&
+        Number.isFinite(Number(record.expenses)) &&
+        Number.isFinite(Number(record.profit))
+      );
+    }
+  }
+} catch (error) {
+  console.error("Could not load daily records:", error);
+}
 
     recordsContainer.replaceChildren();
 
@@ -2011,10 +2113,11 @@ if (!confirmed) return;
   $("calculator").addEventListener("change", updateDailyPreview);
 
   setTodayDate();
-  updateDailyPreview();
-  renderDailyRecords();
-  
-  calculate();
+updateDailyPreview();
+renderDailyRecords();
+checkDataIntegrity();
+
+calculate();
 })();
 
 if ("serviceWorker" in navigator) {

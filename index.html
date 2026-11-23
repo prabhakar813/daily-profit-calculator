@@ -2164,7 +2164,7 @@ document.querySelectorAll(".app-nav button").forEach(button => {
         createdAt: new Date().toISOString(),
         data: {
           expenses: JSON.parse(localStorage.getItem(expenseKey) || "[]"),
-          savings: JSON.parse(localStorage.getItem(savingsKey) || "[]"),
+          savings: JSON.parse(localStorage.getItem(savingsKey) || "{}"),
           dailyRecords: JSON.parse(localStorage.getItem(dailyKey) || "[]")
         }
       };
